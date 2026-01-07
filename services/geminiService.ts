@@ -2,13 +2,20 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { TithiEvent } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const fetchTithisForMonth = async (year: number, month: number): Promise<TithiEvent[]> => {
   const prompt = `Generate a JSON list of major Hindu/Bangla Tithis (Lunar phases) for the Gregorian month ${month} of year ${year}. 
   Include Purnima, Amavasya, Pratipada, and Ekadashi. 
-  Ensure dates are accurate for the India/Bangladesh region. 
-  Each entry must have: date (ISO string), name, banglaName (in Bengali script), startTime, endTime, and a short description of significance.`;
+  Ensure dates are accurate for the India/Bangladesh region (IST/BST). 
+  Each entry must have: 
+  - date: The Gregorian date (YYYY-MM-DD) on which the Tithi is primarily observed or peaks.
+  - name: English name
+  - banglaName: in Bengali script
+  - startDateTime: Absolute ISO 8601 timestamp (e.g., 2024-10-10T22:30:00Z) of when the Tithi begins.
+  - endDateTime: Absolute ISO 8601 timestamp (e.g., 2024-10-11T20:15:00Z) of when the Tithi ends.
+  - description: English significance
+  - type: One of: Purnima, Amavasya, Pratipada, Ekadashi, Other.`;
 
   try {
     const response = await ai.models.generateContent({
@@ -24,15 +31,12 @@ export const fetchTithisForMonth = async (year: number, month: number): Promise<
               date: { type: Type.STRING },
               name: { type: Type.STRING },
               banglaName: { type: Type.STRING },
-              startTime: { type: Type.STRING },
-              endTime: { type: Type.STRING },
+              startDateTime: { type: Type.STRING },
+              endDateTime: { type: Type.STRING },
               description: { type: Type.STRING },
-              type: { 
-                type: Type.STRING,
-                description: "Must be one of: Purnima, Amavasya, Pratipada, Ekadashi, Other"
-              }
+              type: { type: Type.STRING }
             },
-            required: ["date", "name", "banglaName", "startTime", "endTime", "type"]
+            required: ["date", "name", "banglaName", "startDateTime", "endDateTime", "type"]
           }
         }
       }
@@ -47,15 +51,16 @@ export const fetchTithisForMonth = async (year: number, month: number): Promise<
 
 export const getTithiAdvice = async (tithi: TithiEvent): Promise<string> => {
   const prompt = `Explain the spiritual and cultural significance of ${tithi.name} (${tithi.banglaName}) in Bengali culture. 
-  Provide tips for rituals or activities associated with this specific day. Keep it warm and informative. Response in English with some Bengali greetings.`;
+  Provide tips for rituals or activities associated with this specific day. Keep it warm and informative. 
+  The response MUST be strictly in Bengali (বাংলা) language.`;
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt
     });
-    return response.text || "No details available for this Tithi.";
+    return response.text || "এই তিথি সম্পর্কে কোনো তথ্য পাওয়া যায়নি।";
   } catch (error) {
-    return "Could not load advice at this time.";
+    return "দুঃখিত, এই মুহূর্তে তথ্য লোড করা সম্ভব হচ্ছে না।";
   }
 };

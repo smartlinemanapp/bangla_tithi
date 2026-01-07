@@ -1,10 +1,10 @@
 
 export interface TithiEvent {
-  date: string; // ISO format
+  date: string; // ISO format (Primary observation date)
   name: string;
   banglaName: string;
-  startTime: string;
-  endTime: string;
+  startDateTime: string; // Full ISO 8601 timestamp
+  endDateTime: string;   // Full ISO 8601 timestamp
   description: string;
   type: 'Purnima' | 'Amavasya' | 'Pratipada' | 'Ekadashi' | 'Other';
 }
