@@ -6,7 +6,7 @@ export interface TithiEvent {
   startDateTime: string; // Full ISO 8601 timestamp
   endDateTime: string;   // Full ISO 8601 timestamp
   description: string;
-  type: 'Purnima' | 'Amavasya' | 'Pratipada' | 'Ekadashi' | 'Other';
+  type: 'Purnima' | 'Amavasya' | 'Pratipada' | 'Ekadashi' | 'Festival' | 'Other';
 }
 
 export interface BanglaDate {

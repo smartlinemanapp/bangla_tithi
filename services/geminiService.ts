@@ -4,18 +4,22 @@ import { TithiEvent } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const fetchTithisForMonth = async (year: number, month: number): Promise<TithiEvent[]> => {
-  const prompt = `Generate a JSON list of major Hindu/Bangla Tithis (Lunar phases) for the Gregorian month ${month} of year ${year}. 
-  Include Purnima, Amavasya, Pratipada, and Ekadashi. 
+/**
+ * Fetches Tithis and major Bengali Festivals for a range of months.
+ */
+export const fetchTithisForRange = async (startYear: number, startMonth: number, monthCount: number = 6): Promise<TithiEvent[]> => {
+  const prompt = `Generate a JSON list of major Hindu/Bangla Tithis (Lunar phases) and significant Bengali Festivals (Pujas) starting from ${startMonth}/${startYear} for a duration of ${monthCount} months.
+  Include Purnima, Amavasya, Pratipada, Ekadashi, and major Festivals like Durga Puja, Lakshmi Puja, Kali Puja, Saraswati Puja, etc.
   Ensure dates are accurate for the India/Bangladesh region (IST/BST). 
   Each entry must have: 
-  - date: The Gregorian date (YYYY-MM-DD) on which the Tithi is primarily observed or peaks.
+  - date: The Gregorian date (YYYY-MM-DD) on which the event is primarily observed.
   - name: English name
   - banglaName: in Bengali script
-  - startDateTime: Absolute ISO 8601 timestamp (e.g., 2024-10-10T22:30:00Z) of when the Tithi begins.
-  - endDateTime: Absolute ISO 8601 timestamp (e.g., 2024-10-11T20:15:00Z) of when the Tithi ends.
+  - startDateTime: Absolute ISO 8601 timestamp of when the Tithi or Puja mahuratam begins.
+  - endDateTime: Absolute ISO 8601 timestamp of when it ends.
   - description: English significance
-  - type: One of: Purnima, Amavasya, Pratipada, Ekadashi, Other.`;
+  - type: One of: Purnima, Amavasya, Pratipada, Ekadashi, Festival, Other.
+  Ensure the output is strictly a valid JSON array.`;
 
   try {
     const response = await ai.models.generateContent({
@@ -44,7 +48,7 @@ export const fetchTithisForMonth = async (year: number, month: number): Promise<
 
     return JSON.parse(response.text || "[]");
   } catch (error) {
-    console.error("Error fetching Tithis:", error);
+    console.error("Error fetching Tithis range:", error);
     return [];
   }
 };
